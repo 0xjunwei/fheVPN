@@ -28,7 +28,7 @@ contract ProxyLocation is Permissioned {
     euint128 currentAmountReceived;
   }
   struct ClientDetails {
-    uint256 clientID;
+    address clientAddress;
     // max uint8 = 255, each octet in the array represents 255.255.255.255
     euint8 firstOctet;
     euint8 secondOctet;
@@ -113,7 +113,7 @@ contract ProxyLocation is Permissioned {
     }
     // Record the client payment
     ClientDetails memory newClient = ClientDetails({
-      clientID: block.timestamp,
+      clientID: msg.sender,
       firstOctet: server.firstOctet,
       secondOctet: server.secondOctet,
       thirdOctet: server.thirdOctet,
@@ -142,7 +142,7 @@ contract ProxyLocation is Permissioned {
 
 
   // Read client info
-  function retrieveClientInfo(
+  function retrieveClientInfoFirstOctet(
       uint256 serverID,
       address _clientAddress,
       Permission memory perm
@@ -156,21 +156,159 @@ contract ProxyLocation is Permissioned {
       // Fetch the client details
       ClientDetails storage client = _serverClientList[serverID][_clientAddress];
 
-      // Check if the client exists and has paid for the server
+      // Check if the client exists and has paid for the server, also prevent unauthorized access to client ip
       require(client.paidForServerID == serverID, "Client has not paid for access");
 
       return FHE.sealoutput(
         client.firstOctet, 
-        client.secondOctet, 
-        client.thirdOctet, 
-        client.fourthOctet,
         perm.publicKey
       );
   }
-  
+  function retrieveClientInfoSecondOctet(
+      uint256 serverID,
+      address _clientAddress,
+      Permission memory perm
+  ) public view onlySender(perm) returns (bytes memory) {
+      // Check if the server exists
+      require(serverID < _currServerCount, "Server not found");
+      // Fetch the server details
+      ServerDetails storage server = _serverList[serverID];
+      // Check if the caller is the owner of the server
+      require(server.walletCreator == msg.sender, "Only the server owner can view client info");
+      // Fetch the client details
+      ClientDetails storage client = _serverClientList[serverID][_clientAddress];
+
+      // Check if the client exists and has paid for the server, also prevent unauthorized access to client ip
+      require(client.paidForServerID == serverID, "Client has not paid for access");
+
+      return FHE.sealoutput(
+        client.secondOctet, 
+        perm.publicKey
+      );
+  }
+  function retrieveClientInfoThirdOctet(
+      uint256 serverID,
+      address _clientAddress,
+      Permission memory perm
+  ) public view onlySender(perm) returns (bytes memory) {
+      // Check if the server exists
+      require(serverID < _currServerCount, "Server not found");
+      // Fetch the server details
+      ServerDetails storage server = _serverList[serverID];
+      // Check if the caller is the owner of the server
+      require(server.walletCreator == msg.sender, "Only the server owner can view client info");
+      // Fetch the client details
+      ClientDetails storage client = _serverClientList[serverID][_clientAddress];
+
+      // Check if the client exists and has paid for the server, also prevent unauthorized access to client ip
+      require(client.paidForServerID == serverID, "Client has not paid for access");
+
+      return FHE.sealoutput(
+        client.thirdOctet, 
+        perm.publicKey
+      );
+  }
+  function retrieveClientInfoFourthOctet(
+      uint256 serverID,
+      address _clientAddress,
+      Permission memory perm
+  ) public view onlySender(perm) returns (bytes memory) {
+      // Check if the server exists
+      require(serverID < _currServerCount, "Server not found");
+      // Fetch the server details
+      ServerDetails storage server = _serverList[serverID];
+      // Check if the caller is the owner of the server
+      require(server.walletCreator == msg.sender, "Only the server owner can view client info");
+      // Fetch the client details
+      ClientDetails storage client = _serverClientList[serverID][_clientAddress];
+
+      // Check if the client exists and has paid for the server, also prevent unauthorized access to client ip
+      require(client.paidForServerID == serverID, "Client has not paid for access");
+
+      return FHE.sealoutput(
+        client.fourthOctet, 
+        perm.publicKey
+      );
+  }
+
 
   // read server info after server added you
-
+  function retrieServerInfoFirstOctet(
+      uint256 serverID,
+      Permission memory perm
+  ) public view onlySender(perm) returns (bytes memory) {
+      // Check if the server exists
+      require(serverID < _currServerCount, "Server not found");
+      // Fetch the server details
+      ServerDetails storage server = _serverList[serverID];
+      
+      // Fetch the client details
+      ClientDetails storage client = _serverClientList[serverID][_clientAddress];
+      // Check if the client exists and has paid for the server
+      require(client.clientID == msg.sender, "Your not the client");
+      
+      return FHE.sealoutput(
+        server.firstOctet, 
+        perm.publicKey
+      );
+  }
+  function retrieServerInfoSecondOctet(
+      uint256 serverID,
+      Permission memory perm
+  ) public view onlySender(perm) returns (bytes memory) {
+      // Check if the server exists
+      require(serverID < _currServerCount, "Server not found");
+      // Fetch the server details
+      ServerDetails storage server = _serverList[serverID];
+      
+      // Fetch the client details
+      ClientDetails storage client = _serverClientList[serverID][_clientAddress];
+      // Check if the client exists and has paid for the server
+      require(client.clientID == msg.sender, "Your not the client");
+      
+      return FHE.sealoutput(
+        server.secondOctet, 
+        perm.publicKey
+      );
+  }
+  function retrieServerInfoThirdOctet(
+      uint256 serverID,
+      Permission memory perm
+  ) public view onlySender(perm) returns (bytes memory) {
+      // Check if the server exists
+      require(serverID < _currServerCount, "Server not found");
+      // Fetch the server details
+      ServerDetails storage server = _serverList[serverID];
+      
+      // Fetch the client details
+      ClientDetails storage client = _serverClientList[serverID][_clientAddress];
+      // Check if the client exists and has paid for the server
+      require(client.clientID == msg.sender, "Your not the client");
+      
+      return FHE.sealoutput(
+        server.thirdOctet, 
+        perm.publicKey
+      );
+  }
+  function retrieServerInfoFourthOctet(
+      uint256 serverID,
+      Permission memory perm
+  ) public view onlySender(perm) returns (bytes memory) {
+      // Check if the server exists
+      require(serverID < _currServerCount, "Server not found");
+      // Fetch the server details
+      ServerDetails storage server = _serverList[serverID];
+      
+      // Fetch the client details
+      ClientDetails storage client = _serverClientList[serverID][_clientAddress];
+      // Check if the client exists and has paid for the server
+      require(client.clientID == msg.sender, "Your not the client");
+      
+      return FHE.sealoutput(
+        server.fourthOctet, 
+        perm.publicKey
+      );
+  }
 
   // Edit server
 
