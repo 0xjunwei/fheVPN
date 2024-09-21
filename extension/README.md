@@ -12,3 +12,7 @@ vpn-extension/
 ├── tsconfig.json            # TypeScript configuration
 └── webpack.config.js        # Webpack config to bundle the project
 ```
+
+
+pnpm i 
+pnpm run build
