@@ -2,7 +2,7 @@
 =======
 ETHGlobal Singapore 2024 Fhenix submission
 
-Fhenix Testnet Contract Addresses:
+Fhenix Testnet Contract Addresses:<br>
 Mintable Token: 0xe58080AA9f3D37BEefc41adcF15D527F2dc94dc3
 Fhenix Proxy Location: 0x289cE92A4350D84e9106ba426A2A12C28d75Abe1
 
