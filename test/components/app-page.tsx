@@ -1,101 +1,114 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { ethers } from "ethers"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
-import { AlertCircle } from "lucide-react"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { useState, useEffect } from "react";
+import { ethers } from "ethers";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { AlertCircle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { JsonRpcProvider } from "ethers";
+import { AddressLike } from "ethers";
 
 // ABI for MintableERC contract
 const mintableERCABI = [
   "function mint(address to, uint256 amount) public",
   "function balanceOf(address account) public view returns (uint256)",
   "function decimals() public view returns (uint8)"
-]
+];
 
 // ABI for ProxyLocation contract (simplified for this example)
 const proxyLocationABI = [
-  "function addServer(uint8 _firstOctet, uint8 _secondOctet, _thirdOctet, _fourthOctet, uint128 _costToLoan, address _receivingAddress, string memory _countryServerIsIn) public",
-  "function payServerForAccess(uint8 _firstOctet, uint8 _secondOctet, _thirdOctet, _fourthOctet, uint256 _serverRequested) public",
+  "function addServer(uint8 _firstOctet, uint8 _secondOctet, uint8 _thirdOctet, uint8 _fourthOctet, uint128 _costToLoan, address _receivingAddress, string memory _countryServerIsIn) public",
+  "function payServerForAccess(uint8 _firstOctet, uint8 _secondOctet, uint8 _thirdOctet, uint8 _fourthOctet, uint256 _serverRequested) public",
   "function _currServerCount() public view returns (uint256)"
-]
+];
+
+// Replace with actual contract addresses
+const mintableERCAddress = "0x1234567890123456789012345678901234567890";
+const proxyLocationAddress = "0x0987654321098765432109876543210987654321";
 
 export function Page() {
-  const [account, setAccount] = useState("")
-  const [balance, setBalance] = useState("")
-  const [mintAmount, setMintAmount] = useState("")
-  const [serverCount, setServerCount] = useState(0)
-  const [error, setError] = useState("")
+  const [account, setAccount] = useState("");
+  const [balance, setBalance] = useState("");
+  const [mintAmount, setMintAmount] = useState("");
+  const [serverCount, setServerCount] = useState(0);
+  const [error, setError] = useState("");
 
-  const mintableERCAddress = "0x1234567890123456789012345678901234567890" // Replace with actual contract address
-  const proxyLocationAddress = "0x0987654321098765432109876543210987654321" // Replace with actual contract address
+  // RPC URL for the Helium network
+  const rpcUrl = "https://api.helium.fhenix.zone"; // Your custom RPC URL
 
   useEffect(() => {
-    connectWallet()
-  }, [])
+    connectWallet();
+  }, []);
 
   async function connectWallet() {
-    if (typeof window !== "undefined" && typeof window.ethereum !== "undefined") {
-      try {
-        await window.ethereum.request({ method: "eth_requestAccounts" })
-        const provider = new ethers.providers.Web3Provider(window.ethereum)
-        const signer = provider.getSigner()
-        const address = await signer.getAddress()
-        setAccount(address)
-        updateBalance(address, provider)
-        updateServerCount(provider)
-      } catch (err) {
-        setError("Failed to connect MetaMask")
-      }
-    } else {
-      setError("Please install MetaMask")
+    try {
+      // Use JsonRpcProvider with your custom RPC URL
+      const provider = new ethers.JsonRpcProvider(rpcUrl);
+      
+      // Replace `getSigner()` with prompt to manually enter an address
+      // If you need a Signer (for signing txs), you'd get the private key (or prompt the user for one)
+      const accountAddress = "0xaa7c602931Fe50D0983aBa4423c52c467Cf61944"; // Replace with the actual address
+      setAccount(accountAddress);
+
+      // Use the provider to interact with contracts or check the balance, etc.
+      const balance = await provider.getBalance(accountAddress);
+      console.log("Balance:", ethers.formatUnits(balance, 18)); // assuming 18 decimals
+
+      // Update balance and server count
+      updateBalance(accountAddress, provider);
+      updateServerCount(provider);
+    } catch ( err ) {
+      setError("Failed to connect to the custom RPC URL");
     }
   }
 
-  async function updateBalance(address: string, provider: ethers.Provider.Web3Provider) {
-    const contract = new ethers.Contract(mintableERCAddress, mintableERCABI, provider)
-    const balance = await contract.balanceOf(address)
-    const decimals = await contract.decimals()
-    setBalance(ethers.formatUnits(balance, decimals))
+  async function updateBalance(address: AddressLike, provider: JsonRpcProvider) {
+    const contract = new ethers.Contract(mintableERCAddress, mintableERCABI, provider);
+    const balance = await contract.balanceOf(address);
+    const decimals = await contract.decimals();
+    setBalance(ethers.formatUnits(balance, decimals)); // Format balance correctly
   }
 
-  async function updateServerCount(provider: ethers.providers.Web3Provider) {
-    const contract = new ethers.Contract(proxyLocationAddress, proxyLocationABI, provider)
-    const count = await contract._currServerCount()
-    setServerCount(count.toNumber())
+  async function updateServerCount(provider: JsonRpcProvider) {
+    const contract = new ethers.Contract(proxyLocationAddress, proxyLocationABI, provider);
+    const count = await contract._currServerCount();
+    setServerCount(Number(count)); // Convert to number
   }
 
   async function mintTokens() {
-    if (!account || !mintAmount) return
+    if (!account || !mintAmount) return;
     try {
-      const provider = new ethers.providers.Web3Provider(window.ethereum)
-      const signer = provider.getSigner()
-      const contract = new ethers.Contract(mintableERCAddress, mintableERCABI, signer)
-      const decimals = await contract.decimals()
-      const amount = ethers.utils.parseUnits(mintAmount, decimals)
-      const tx = await contract.mint(account, amount)
-      await tx.wait()
-      updateBalance(account, provider)
-      setError("")
+      const provider = new ethers.JsonRpcProvider(rpcUrl);
+      // Assuming you're using a signer, if you need it, you'll have to get it manually
+      const signer = provider.getSigner(account); // This assumes you have access to the private key
+      
+      const contract = new ethers.Contract(mintableERCAddress, mintableERCABI, signer);
+      const decimals = await contract.decimals();
+      const amount = ethers.parseUnits(mintAmount, decimals); // Parse mint amount correctly
+      const tx = await contract.mint(account, amount);
+      await tx.wait();
+      updateBalance(account, provider);
+      setError("");
     } catch (err) {
-      setError("Failed to mint tokens")
+      setError("Failed to mint tokens");
     }
   }
 
   async function addServer() {
     try {
-      const provider = new ethers.providers.Web3Provider(window.ethereum)
-      const signer = provider.getSigner()
-      const contract = new ethers.Contract(proxyLocationAddress, proxyLocationABI, signer)
-      const tx = await contract.addServer(192, 168, 1, 1, ethers.utils.parseEther("0.1"), account, "USA")
-      await tx.wait()
-      updateServerCount(provider)
-      setError("")
+      const provider = new ethers.JsonRpcProvider(rpcUrl);
+      const signer = provider.getSigner(account); // Assuming you have access to the private key
+
+      const contract = new ethers.Contract(proxyLocationAddress, proxyLocationABI, signer);
+      const tx = await contract.addServer(192, 168, 1, 1, ethers.parseEther("0.1"), account, "USA");
+      await tx.wait();
+      updateServerCount(provider);
+      setError("");
     } catch (err) {
-      setError("Failed to add server")
+      setError("Failed to add server");
     }
   }
 
@@ -122,7 +135,7 @@ export function Page() {
         </CardHeader>
         <CardContent>
           <p><strong>Address:</strong> {account || "Not connected"}</p>
-          <p><strong>Balance:</strong> {balance || "0"} USDC</p>
+          <p><strong>Balance:</strong> {balance || "0"} TFHE</p>
           {!account && (
             <Button onClick={connectWallet} className="mt-2">Connect Wallet</Button>
           )}
@@ -158,5 +171,5 @@ export function Page() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
