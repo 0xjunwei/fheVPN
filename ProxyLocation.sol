@@ -6,11 +6,8 @@ import {Permissioned, Permission} from "@fhenixprotocol/contracts/access/Permiss
 
 // Interface for the ERC20 token standard
 interface IERC20 {
-  function transferFrom(
-    address sender,
-    address recipient,
-    uint256 amount
-  ) external returns (bool);
+    function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
+    function transfer(address recipient, uint256 amount) external returns (bool);
 }
 
 contract ProxyLocation is Permissioned {
@@ -38,6 +35,7 @@ contract ProxyLocation is Permissioned {
     uint8 addedToWhitelist;
   }
   uint256 _currServerCount;
+  IERC20 public paymentToken;
 
   // Server list, shows ServerID to Country
   mapping(uint256 => string) public _serverCountryList;
@@ -140,6 +138,31 @@ contract ProxyLocation is Permissioned {
     client.addedToWhitelist = 1;
   }
 
+  // Withdraw payment
+  function withdrawFunds(uint256 _serverID) public {
+    // Ensure the server exists
+    require(_serverID < _currServerCount, "Server not found");
+    // Fetch the server details
+    ServerDetails storage server = _serverList[_serverID];
+    // Ensure that the caller is the owner of the server
+    require(server.walletCreator == msg.sender, "Only the server owner can withdraw funds");
+
+    // Ensure that there are funds to withdraw
+    uint128 amountToWithdraw = FHE.toUint128(server.currentAmountReceived);
+    require(amountToWithdraw > 0, "No funds to withdraw");
+    // Decrypt the server's receiving wallet address using FHE.decrypt
+    address decryptedReceivingWallet = FHE.asAddress(FHE.decrypt(server.receivingWallet));
+
+    // Reset the server's current amount received to 0 before transferring the funds
+    server.currentAmountReceived = FHE.asEuint128(0);
+
+    // Transfer the funds from the contract to the decrypted receiving wallet
+    require(
+        paymentToken.transfer(decryptedReceivingWallet, amountToWithdraw),
+        "Transfer failed"
+    );
+  }
+
 
   // Read client info
   function retrieveClientInfoFirstOctet(
@@ -226,14 +249,14 @@ contract ProxyLocation is Permissioned {
       require(client.paidForServerID == serverID, "Client has not paid for access");
 
       return FHE.sealoutput(
-        client.fourthOctet, 
+        client.fourthOctet,
         perm.publicKey
       );
   }
 
 
   // read server info after server added you
-  function retrieServerInfoFirstOctet(
+  function retrieveServerInfoFirstOctet(
       uint256 serverID,
       Permission memory perm
   ) public view onlySender(perm) returns (bytes memory) {
@@ -252,7 +275,7 @@ contract ProxyLocation is Permissioned {
         perm.publicKey
       );
   }
-  function retrieServerInfoSecondOctet(
+  function retrieveServerInfoSecondOctet(
       uint256 serverID,
       Permission memory perm
   ) public view onlySender(perm) returns (bytes memory) {
@@ -271,7 +294,7 @@ contract ProxyLocation is Permissioned {
         perm.publicKey
       );
   }
-  function retrieServerInfoThirdOctet(
+  function retrieveServerInfoThirdOctet(
       uint256 serverID,
       Permission memory perm
   ) public view onlySender(perm) returns (bytes memory) {
@@ -290,7 +313,7 @@ contract ProxyLocation is Permissioned {
         perm.publicKey
       );
   }
-  function retrieServerInfoFourthOctet(
+  function retrieveServerInfoFourthOctet(
       uint256 serverID,
       Permission memory perm
   ) public view onlySender(perm) returns (bytes memory) {
@@ -311,6 +334,32 @@ contract ProxyLocation is Permissioned {
   }
 
   // Edit server
+  function modifyServerDetails(
+    uint256 _serverID,
+    inEuint8 memory _firstOctet,
+    inEuint8 memory _secondOctet,
+    inEuint8 memory _thirdOctet,
+    inEuint8 memory _fourthOctet,
+    uint128 _costToLoan,
+    inEaddress memory _receivingAddress
+  ) public {
+      // Ensure the server exists
+      require(_serverID < _currServerCount, "Server not found");
+
+      // Fetch the server details
+      ServerDetails storage server = _serverList[_serverID];
+
+      // Ensure that the caller is the owner of the server
+      require(server.walletCreator == msg.sender, "Only the server owner can modify details");
+
+      // Update the server's details
+      server.firstOctet = FHE.asEuint8(_firstOctet);
+      server.secondOctet = FHE.asEuint8(_secondOctet);
+      server.thirdOctet = FHE.asEuint8(_thirdOctet);
+      server.fourthOctet = FHE.asEuint8(_fourthOctet);
+      server.costToLoan = _costToLoan;
+      server.receivingWallet = FHE.asEaddress(_receivingAddress);
+  }
 
 
 
