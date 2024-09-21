@@ -123,14 +123,14 @@ contract ProxyLocation is Permissioned {
         // Transfer the required amount of ERC20 tokens from the client to the server's receiving wallet
         if (cost > 0) {
             // Cant get payment to transferFrom despite approval weird need remix but testnet is down
-            /*require(
+            require(
                 paymentToken.transferFrom(
                     msg.sender,
                     address(this),
                     uint256(cost)
                 ),
                 "Payment to contract failed"
-            );*/
+            );
         }
         euint8 _eFirstOctet = FHE.asEuint8(_firstOctet);
         euint8 _eSecondOctet = FHE.asEuint8(_secondOctet);

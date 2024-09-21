@@ -1,0 +1,72 @@
+{
+  "name": "fhenix-contract-playground",
+  "version": "1.0.0",
+  "description": "A number of ready-made contracts for usage with Fhenix",
+  "scripts": {
+    "test": "hardhat test",
+    "compile": "cross-env TS_NODE_TRANSPILE_ONLY=true hardhat compile",
+    "task:deploy": "hardhat deploy",
+    "task:mint": "hardhat task:mint",
+    "task:getBalance": "hardhat task:getBalance",
+    "task:transfer": "hardhat task:transfer",
+    "task:bid": "hardhat task:bid",
+    "task:endAuction": "hardhat task:endAuction",
+    "task:vote": "hardhat task:vote",
+    "task:fundAccounts": "hardhat task:fundAccounts",
+    "task:getCount": "hardhat task:getCount",
+    "task:fin": "hardhat task:fin",
+    "task:getWin": "hardhat task:getWin",
+    "task:getVote": "hardhat task:getVote",
+    "localfhenix:start": "hardhat localfhenix:start",
+    "localfhenix:stop": "hardhat localfhenix:stop"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NomicFoundation/hardhat-boilerplate.git"
+  },
+  "author": "Nomic Foundation",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/NomicFoundation/hardhat-boilerplate/issues"
+  },
+  "homepage": "https://github.com/NomicFoundation/hardhat-boilerplate#readme",
+  "devDependencies": {
+    "@ethersproject/abi": "^5.7.0",
+    "@ethersproject/providers": "^5.7.2",
+    "@fhenixprotocol/contracts": "0.2.1",
+    "@nomicfoundation/hardhat-chai-matchers": "^2.0.6",
+    "@nomicfoundation/hardhat-ethers": "^3.0.5",
+    "@nomicfoundation/hardhat-network-helpers": "^1.0.10",
+    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "@nomicfoundation/hardhat-verify": "^2.0.4",
+    "@openzeppelin/contracts": "^5.0.1",
+    "@typechain/ethers-v6": "^0.5.1",
+    "@types/chai": "^4.3.11",
+    "@types/fs-extra": "^11.0.4",
+    "@types/node": "^20.11.19",
+    "axios": "^1.6.7",
+    "chai": "^4.3.7",
+    "chalk": "^4.1.2",
+    "dotenv": "^16.4.5",
+    "ethers": "^6.11.1",
+    "fhenix-hardhat-docker": "^0.1.1",
+    "fhenix-hardhat-plugin": "^0.1.1",
+    "hardhat": "^2.20.1",
+    "hardhat-deploy": "^0.11.45",
+    "hardhat-gas-reporter": "^1.0.10",
+    "mocha": "^10.3.0",
+    "rimraf": "^5.0.5",
+    "solidity-coverage": "^0.8.7"
+  },
+  "dependencies": {
+    "@nomicfoundation/hardhat-ethers": "^3.0.5",
+    "@nomiclabs/hardhat-etherscan": "^3.0.0",
+    "@typechain/ethers-v5": "^10.1.0",
+    "@typechain/hardhat": "^6.1.2",
+    "fhenixjs": "0.3.0",
+    "@types/mocha": ">=9.1.0",
+    "ts-node": ">=8.0.0",
+    "typechain": "^8.1.0",
+    "typescript": ">=4.5.0"
+  }
+}
