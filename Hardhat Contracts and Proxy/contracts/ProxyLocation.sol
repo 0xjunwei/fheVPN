@@ -41,7 +41,7 @@ contract ProxyLocation is Permissioned {
         uint256 paidForServerID;
         uint8 addedToWhitelist;
     }
-    uint256 _currServerCount;
+    uint256 public _currServerCount;
     IERC20 public immutable paymentToken;
 
     // Restrict adding for nodes to admins, Doing Proxy as a Service (PaaS) for tokenomics
