@@ -3,6 +3,9 @@ ETHGlobal Singapore 2024 Fhenix submission
 fheVPN (Proxies) allows users to browse the web anonymously, we offer Proxy as a Service (PaaS). 
 
 Node providers spin up Proxy nodes in different countries and set a price for access to their nodes.
+Node providers details are encrypted using FHE and only clients that paid for access will be able to view the details, even if the IP addresses are leaked, whitelisted approach will prevent any unauthorized users from accessing the node.
+
+Only clients that paid on chain through fhenix network will be able to be whitelisted.
 
 Whitelisting approach thus no password authentication required. Upon payment, your Client IP address is encrypted through Fhenix network in FHE, and only visible to the node provider to whitelist your client IP.
 
