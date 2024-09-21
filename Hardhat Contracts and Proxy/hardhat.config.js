@@ -22,7 +22,7 @@ module.exports = {
   solidity: "0.8.24",
   etherscan: {
     apiKey: {
-      fhenix: "42069",
+      fhenix: "8008135",
     },
     customChains: [
       {

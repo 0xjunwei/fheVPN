@@ -49,6 +49,19 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     "ProxyLocation",
     tester.address
   );
+  const eFirstOctet = await client.encrypt(172, EncryptionTypes.uint8);
+  /* const eSecondOctet = await client.encrypt(172, EncryptionTypes.uint8);
+  const eThirdOctet = await client.encrypt(172, EncryptionTypes.uint8);
+  const eFourthOctet = await client.encrypt(172, EncryptionTypes.uint8);
+  response0 = await contractInstance.addServer(
+    eFirstOctet,
+    eSecondOctet,
+    eThirdOctet,
+    eFourthOctet,
+    1000000000,
+    "New York"
+  ); */
+  console.log("Added Server to contract");
 };
 
 module.exports.tags = ["ProxyLocation"];

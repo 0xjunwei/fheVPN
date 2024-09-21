@@ -29,7 +29,6 @@ contract ProxyLocation is Permissioned {
         euint8 thirdOctet;
         euint8 fourthOctet;
         uint128 costToLoan;
-        eaddress receivingWallet;
         euint128 currentAmountReceived;
     }
     struct ClientDetails {
@@ -81,14 +80,12 @@ contract ProxyLocation is Permissioned {
         inEuint8 memory _thirdOctet,
         inEuint8 memory _fourthOctet,
         uint128 _costToLoan,
-        inEaddress memory _receivingAddress,
         string memory _countryServerIsIn
     ) public onlyAdmin {
         euint8 _eFirstOctet = FHE.asEuint8(_firstOctet);
         euint8 _eSecondOctet = FHE.asEuint8(_secondOctet);
         euint8 _eThirdOctet = FHE.asEuint8(_thirdOctet);
         euint8 _eFourthOctet = FHE.asEuint8(_fourthOctet);
-        eaddress _eRecvAddress = FHE.asEaddress(_receivingAddress);
         // Create the new server details
         ServerDetails memory newServer = ServerDetails({
             walletCreator: msg.sender,
@@ -98,9 +95,6 @@ contract ProxyLocation is Permissioned {
             thirdOctet: _eThirdOctet,
             fourthOctet: _eFourthOctet,
             costToLoan: _costToLoan,
-            // Privacy probably be broken the moment you send to this address, as users can track state change, even if hash changes you can know
-            // One time use Address will allow you to swap out this wallet to a new one after
-            receivingWallet: _eRecvAddress,
             currentAmountReceived: eZERO128
         });
         // Adding serverlist
@@ -195,7 +189,7 @@ contract ProxyLocation is Permissioned {
         );
 
         // Decrypt the server's receiving wallet address using FHE.decrypt
-        address decryptedReceivingWallet = FHE.decrypt(server.receivingWallet);
+
         uint128 amountToWithdraw = FHE.decrypt(server.currentAmountReceived);
         if (amountToWithdraw > 0) {
             // Reset the server's current amount received to 0 before transferring the funds
@@ -203,10 +197,7 @@ contract ProxyLocation is Permissioned {
 
             // Transfer the funds from the contract to the decrypted receiving wallet
             require(
-                paymentToken.transfer(
-                    decryptedReceivingWallet,
-                    uint256(amountToWithdraw)
-                ),
+                paymentToken.transfer(msg.sender, uint256(amountToWithdraw)),
                 "Transfer failed"
             );
         }
@@ -401,8 +392,7 @@ contract ProxyLocation is Permissioned {
         inEuint8 memory _secondOctet,
         inEuint8 memory _thirdOctet,
         inEuint8 memory _fourthOctet,
-        uint128 _costToLoan,
-        inEaddress memory _receivingAddress
+        uint128 _costToLoan
     ) public onlyAdmin {
         // Ensure the server exists
         require(_serverID < _currServerCount, "Server not found");
@@ -422,6 +412,5 @@ contract ProxyLocation is Permissioned {
         server.thirdOctet = FHE.asEuint8(_thirdOctet);
         server.fourthOctet = FHE.asEuint8(_fourthOctet);
         server.costToLoan = _costToLoan;
-        server.receivingWallet = FHE.asEaddress(_receivingAddress);
     }
 }
