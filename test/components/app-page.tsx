@@ -46,11 +46,14 @@ export function Page() {
   async function connectWallet() {
     try {
       // Use JsonRpcProvider with your custom RPC URL
-      const provider = new ethers.JsonRpcProvider(rpcUrl);
+      const provider = new ethers.JsonRpcProvider(rpcUrl, {
+        chainId: 8008135,
+        name: "Fhenix Helium"
+      });
       
-      // Replace `getSigner()` with prompt to manually enter an address
-      // If you need a Signer (for signing txs), you'd get the private key (or prompt the user for one)
-      const accountAddress = "0xaa7c602931Fe50D0983aBa4423c52c467Cf61944"; // Replace with the actual address
+      // Manually specify the account address or get it from a signer
+      const signer = provider.getSigner(); // Only if you have access to signer
+      const accountAddress = await (await signer).getAddress(); // Get address from wallet
       setAccount(accountAddress);
 
       // Use the provider to interact with contracts or check the balance, etc.
