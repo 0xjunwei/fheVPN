@@ -18,17 +18,11 @@ module.exports = {
       gasPrice: "auto",
       blockConfirmations: 1,
     },
-    fhenixlocal: {
-      url: "http://127.0.0.1:8547",
-      accounts: [PRIVATE_KEY, ADMIN_PRIVATE_KEY],
-      gasPrice: "auto",
-      blockConfirmations: 1,
-    },
   },
   solidity: "0.8.24",
   etherscan: {
     apiKey: {
-      fhenix: "8008135",
+      fhenix: "42069",
     },
     customChains: [
       {
