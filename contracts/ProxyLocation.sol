@@ -45,6 +45,8 @@ contract ProxyLocation is Permissioned {
     uint256 _currServerCount;
     IERC20 public immutable paymentToken;
     euint128 internal eZERO128 = FHE.asEuint128(0);
+    // Restrict adding for nodes to admins, Doing Proxy as a Service (PaaS) for tokenomics
+    mapping(address => bool) public _admin;
 
     // Server list, shows ServerID to Country
     mapping(uint256 => string) public _serverCountryList;
@@ -58,8 +60,13 @@ contract ProxyLocation is Permissioned {
 
     constructor(address _paymentToken) {
         paymentToken = IERC20(_paymentToken);
+        _admin[msg.sender] = true;
     }
 
+    modifier onlyAdmin() {
+        require(_admin[msg.sender], "Caller is not an admin");
+        _; // Continue executing the rest of the modified function
+    }
     // Emit event when client paid so server can track and whitelist
     event ClientPaidForServer(
         address indexed client,
@@ -76,7 +83,7 @@ contract ProxyLocation is Permissioned {
         uint128 _costToLoan,
         inEaddress memory _receivingAddress,
         string memory _countryServerIsIn
-    ) public {
+    ) public onlyAdmin {
         euint8 _eFirstOctet = FHE.asEuint8(_firstOctet);
         euint8 _eSecondOctet = FHE.asEuint8(_secondOctet);
         euint8 _eThirdOctet = FHE.asEuint8(_thirdOctet);
@@ -396,7 +403,7 @@ contract ProxyLocation is Permissioned {
         inEuint8 memory _fourthOctet,
         uint128 _costToLoan,
         inEaddress memory _receivingAddress
-    ) public {
+    ) public onlyAdmin {
         // Ensure the server exists
         require(_serverID < _currServerCount, "Server not found");
 
