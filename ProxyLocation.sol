@@ -43,7 +43,7 @@ contract ProxyLocation is Permissioned {
         uint8 addedToWhitelist;
     }
     uint256 _currServerCount;
-    IERC20 public paymentToken;
+    IERC20 public immutable paymentToken;
     euint128 internal eZERO128 = FHE.asEuint128(0);
 
     // Server list, shows ServerID to Country
@@ -56,7 +56,9 @@ contract ProxyLocation is Permissioned {
     mapping(uint256 => mapping(address => ClientDetails))
         public _serverClientList;
 
-    constructor() {}
+    constructor(address _paymentToken) {
+        paymentToken = IERC20(_paymentToken);
+    }
 
     // Emit event when client paid so server can track and whitelist
     event ClientPaidForServer(
@@ -120,7 +122,11 @@ contract ProxyLocation is Permissioned {
         // Transfer the required amount of ERC20 tokens from the client to the server's receiving wallet
         if (cost > 0) {
             require(
-                paymentToken.transferFrom(msg.sender, address(this), cost),
+                paymentToken.transferFrom(
+                    msg.sender,
+                    address(this),
+                    uint256(cost)
+                ),
                 "Payment to contract failed"
             );
         }
@@ -192,7 +198,7 @@ contract ProxyLocation is Permissioned {
             require(
                 paymentToken.transfer(
                     decryptedReceivingWallet,
-                    amountToWithdraw
+                    uint256(amountToWithdraw)
                 ),
                 "Transfer failed"
             );
