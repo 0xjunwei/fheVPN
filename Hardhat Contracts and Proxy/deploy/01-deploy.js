@@ -25,7 +25,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   const chainId = network.config.chainId;
 
   // Define the address that you need to pass as a constructor argument
-  const paymentTokenAddress = "0x5Cbe12A6fC98764a063225DF7D49a901068A0cF1";
+  const paymentTokenAddress = "0x6D398272de5b62D66233923E01BA335AA1317b3B";
   // Initialize FhenixClient
   const client = new FhenixClient({ provider: ethers.provider });
   // when going for localhost or hardhat network we want to use a mock
@@ -100,7 +100,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   let responseApprove = await paymentTokenContract
     .connect(admin)
     .approve(tester.address, approveAmount);
-  console.log("Admin approved token transfer");
+  console.log("Admin approved token transfer: ", responseApprove);
 
   // Admin pays for server access
   const adminContractInstance = contractInstance.connect(admin);
