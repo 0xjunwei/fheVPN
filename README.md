@@ -3,7 +3,7 @@
 ETHGlobal Singapore 2024 Fhenix submission
 
 Fhenix Testnet Contract Addresses:<br>
-Mintable Token: 0xe58080AA9f3D37BEefc41adcF15D527F2dc94dc3
+Mintable Token: 0xe58080AA9f3D37BEefc41adcF15D527F2dc94dc3 <br>
 Fhenix Proxy Location: 0x289cE92A4350D84e9106ba426A2A12C28d75Abe1
 
 fheVPN (Proxies) allows users to browse the web anonymously, we offer Proxy as a Service (PaaS). 
@@ -30,7 +30,7 @@ After connection whatismyip:
 ![image](https://github.com/user-attachments/assets/811b6ed3-5c66-4269-9ff8-fd4575e0c8ff)
 
 
-Contract works and allows authentication to Node Proxy, just frontend is not fully integrated
+Contract works and allows authentication to Node Proxy only when paid, just frontend is not fully integrated
 ![image](https://github.com/user-attachments/assets/b6c91984-233a-4522-bd40-ac2c1d014a0a)
 
 High-Level overview:
