@@ -42,9 +42,7 @@ cd test
 Make sure you have Node.js installed. Then run:
 
 ```bash
-npm install
-# or
-yarn install
+pnpm install
 ```
 
 ### 3. **Set up environment variables**
@@ -53,8 +51,8 @@ Create a `.env.local` file in the root of the project, and configure the followi
 
 ```bash
 NEXT_PUBLIC_RPC_URL="https://api.helium.fhenix.zone" # Replace with your RPC URL if different
-NEXT_PUBLIC_MINTABLE_ERC_ADDRESS="0x1234567890123456789012345678901234567890"
-NEXT_PUBLIC_PROXY_LOCATION_ADDRESS="0x0987654321098765432109876543210987654321"
+NEXT_PUBLIC_MINTABLE_ERC_ADDRESS="..."
+NEXT_PUBLIC_PROXY_LOCATION_ADDRESS="..."
 NEXT_PUBLIC_CHAIN_ID="8008135" # Chain ID for Fhenix Helium
 ```
 
@@ -115,29 +113,10 @@ This frontend interacts with two smart contracts:
 
 1. **MintableERC.sol**: 
    - Handles the minting of tokens and querying balances.
-   - **Address**: `0x1234567890123456789012345678901234567890`
+   - **Address**: `...`
 
 2. **ProxyLocation.sol**: 
    - Manages VPN server nodes and allows clients to pay for access.
-   - **Address**: `0x0987654321098765432109876543210987654321`
+   - **Address**: `...`
 
 **Note**: The contract ABIs are defined within the frontend code for simplicity but can be updated to fetch dynamically or imported from a centralized source.
-
----
-
-## **Contributing**
-
-Contributions are welcome! If you’d like to contribute, please fork the repository and make your changes in a new branch. Afterward, open a pull request describing your changes.
-
-Steps to contribute:
-1. Fork the repo.
-2. Create your feature branch (`git checkout -b feature/YourFeature`).
-3. Commit your changes (`git commit -m 'Add some feature'`).
-4. Push to the branch (`git push origin feature/YourFeature`).
-5. Open a pull request.
-
----
-
-## **License**
-
-This project is licensed under the MIT License.

@@ -1,0 +1,15 @@
+module.exports = {
+  webpack: (config) => {
+    config.module.rules.push({
+      test: /\.wasm$/,
+      loader: 'file-loader',
+      type: 'javascript/auto',
+    });
+
+    config.experiments = {
+      asyncWebAssembly: true,
+    };
+
+    return config;
+  },
+};
