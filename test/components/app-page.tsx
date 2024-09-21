@@ -1,7 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { ethers } from "ethers";
+import { useEffect, useState } from 'react';
+import { useConnectWallet } from './hooks/connect';
+import { useBalance } from './hooks/balance';
+import { useMintTokens } from './hooks/mint';
+import { useServers, useServerOperations, usePayForServerAccess} from './hooks/serverActions';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,157 +27,53 @@ const proxyLocationABI = [
   "function _serverCountryList(uint256) public view returns (string)"
 ];
 
-// Replace with actual contract addresses
-const mintableERCAddress = "0x1234567890123456789012345678901234567890";
-const proxyLocationAddress = "0x0987654321098765432109876543210987654321";
+const rpcUrl = 'https://api.helium.fhenix.zone';
+const mintableERCAddress = '0x1234567890123456789012345678901234567890';
+const proxyLocationAddress = '0x0987654321098765432109876543210987654321';
 
 export function Page() {
-  const [account, setAccount] = useState("");
-  const [balance, setBalance] = useState("");
-  const [mintAmount, setMintAmount] = useState("");
-  const [serverCount, setServerCount] = useState(0);
-  const [servers, setServers] = useState([]);  // Store servers
-  const [clientIP, setClientIP] = useState({ firstOctet: 0, secondOctet: 0, thirdOctet: 0, fourthOctet: 0 });
-  const [error, setError] = useState("");
+  const { account, connectWallet, error: connectError } = useConnectWallet(rpcUrl);
+  const { balance, updateBalance, error: balanceError } = useBalance(rpcUrl, mintableERCAddress, mintableERCABI);
+  const { serverCount, servers, fetchServers, error: serverError } = useServers(rpcUrl, proxyLocationAddress, proxyLocationABI);
+  const { mintTokens, error: mintError } = useMintTokens(rpcUrl, mintableERCAddress, mintableERCABI);
+  const { addServer, error: serverOpError } = useServerOperations(rpcUrl, proxyLocationAddress, proxyLocationABI);
+  const { payForServerAccess, error: payError } = usePayForServerAccess(rpcUrl, proxyLocationAddress, proxyLocationABI);
 
-  const rpcUrl = "https://api.helium.fhenix.zone"; // RPC URL
+  const [mintAmount, setMintAmount] = useState<string>('');
 
   useEffect(() => {
-    connectWallet();
-    getClientIP();
-  }, []);
-
-  // Connect wallet and update balance and server count
-  async function connectWallet() {
-    try {
-      const provider = new ethers.JsonRpcProvider(rpcUrl, {
-        chainId: 8008135,
-        name: "Fhenix Helium"
-      });
-      const signer = provider.getSigner();
-      const accountAddress = await (await signer).getAddress();
-      setAccount(accountAddress);
-
-      updateBalance(accountAddress, provider);
-      updateServerCount(provider);
-      fetchServers(provider);
-    } catch (err) {
-      setError("Failed to connect to the custom RPC URL");
+    // If wallet is already connected, don't trigger connect again.
+    if (!account) {
+      connectWallet();
     }
-  }
+    fetchServers();
+  }, [account, connectWallet, fetchServers]);
 
-  // Fetch client IP and convert it to octets
-  async function getClientIP() {
-    const ipData = await fetch('https://api.ipify.org?format=json').then((res) => res.json());
-    const octets = ipData.ip.split('.').map(Number);
-    setClientIP({
-      firstOctet: octets[0],
-      secondOctet: octets[1],
-      thirdOctet: octets[2],
-      fourthOctet: octets[3],
-    });
-  }
-
-  async function updateBalance(address, provider) {
-    const contract = new ethers.Contract(mintableERCAddress, mintableERCABI, provider);
-    const balance = await contract.balanceOf(address);
-    const decimals = await contract.decimals();
-    setBalance(ethers.formatUnits(balance, decimals));
-  }
-
-  async function updateServerCount(provider) {
-    const contract = new ethers.Contract(proxyLocationAddress, proxyLocationABI, provider);
-    const count = await contract._currServerCount();
-    setServerCount(Number(count));
-  }
-
-  // Fetch the list of servers
-  async function fetchServers(provider) {
-    const contract = new ethers.Contract(proxyLocationAddress, proxyLocationABI, provider);
-    let serversList = [];
-    const count = await contract._currServerCount();
-
-    for (let i = 0; i < count; i++) {
-      const country = await contract._serverCountryList(i);
-      serversList.push({ id: i, country });
+  useEffect(() => {
+    if (account) {
+      updateBalance(account);
     }
-    setServers(serversList);
-  }
-
-  // Mint tokens
-  async function mintTokens() {
-    if (!account || !mintAmount) return;
-    try {
-      const provider = new ethers.JsonRpcProvider(rpcUrl, {
-        chainId: 8008135,
-        name: "Fhenix Helium"
-      });
-      const signer = provider.getSigner(account);
-      const contract = new ethers.Contract(mintableERCAddress, mintableERCABI, signer);
-      const decimals = await contract.decimals();
-      const amount = ethers.parseUnits(mintAmount, decimals);
-      const tx = await contract.mint(account, amount);
-      await tx.wait();
-      updateBalance(account, provider);
-      setError("");
-    } catch (err) {
-      setError("Failed to mint tokens");
-    }
-  }
-
-  // Add a new server
-  async function addServer() {
-    try {
-      const provider = new ethers.JsonRpcProvider(rpcUrl);
-      const signer = provider.getSigner(account);
-      const contract = new ethers.Contract(proxyLocationAddress, proxyLocationABI, signer);
-      const tx = await contract.addServer(192, 168, 1, 1, ethers.parseEther("0.1"), account, "USA");
-      await tx.wait();
-      updateServerCount(provider);
-      setError("");
-    } catch (err) {
-      setError(`Failed to add server ${err}`);
-    }
-  }
-
-  // Pay for a selected server
-  async function payForServerAccess(serverId: number) {
-    try {
-      const provider = new ethers.JsonRpcProvider(rpcUrl);
-      const signer = provider.getSigner(account);
-      const contract = new ethers.Contract(proxyLocationAddress, proxyLocationABI, signer);
-      const tx = await contract.payServerForAccess(
-        clientIP.firstOctet,
-        clientIP.secondOctet,
-        clientIP.thirdOctet,
-        clientIP.fourthOctet,
-        serverId
-      );
-      await tx.wait();
-      alert("Payment successful, you will receive the VPN access soon.");
-    } catch (err) {
-      setError(`Failed to pay for server access. ${err}`);
-    }
-  }
+  }, [account, updateBalance]);
 
   return (
     <div className="space-y-8">
-      {/* Account Info */}
       <section>
         <h2 className="text-3xl font-bold mb-4">Welcome to Web3 Interaction</h2>
         <p className="text-lg text-neutral-500 dark:text-neutral-400">
-          Connect your wallet and interact with Ethereum smart contracts.
+          Connect your wallet and interact with Ethereum smart contracts. Mint tokens, manage servers, and explore the world of decentralized applications.
         </p>
       </section>
 
-      {error && (
+      {/* Error Alerts */}
+      {connectError && (
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
+          <AlertDescription>{connectError}</AlertDescription>
         </Alert>
       )}
 
+      {/* Account Information */}
       <Card>
         <CardHeader>
           <CardTitle>Account Information</CardTitle>
@@ -204,7 +103,10 @@ export function Page() {
               placeholder="Enter amount to mint"
             />
           </div>
-          <Button className="mt-2" onClick={mintTokens} disabled={!account}>Mint</Button>
+          <Button className="mt-2" onClick={() => mintTokens(account, mintAmount)} disabled={!account || !mintAmount}>
+            Mint
+          </Button>
+          {mintError && <p className="text-red-500 mt-2">{mintError}</p>}
         </CardContent>
       </Card>
 
@@ -215,7 +117,10 @@ export function Page() {
         </CardHeader>
         <CardContent>
           <p><strong>Server Count:</strong> {serverCount}</p>
-          <Button className="mt-2" onClick={addServer} disabled={!account}>Add Server</Button>
+          <Button className="mt-2" onClick={() => addServer(account, '0.1', 'USA')} disabled={!account}>
+            Add Server
+          </Button>
+          {serverOpError && <p className="text-red-500 mt-2">{serverOpError}</p>}
         </CardContent>
       </Card>
 
@@ -226,13 +131,20 @@ export function Page() {
         </CardHeader>
         <CardContent>
           <ul>
-            {servers.map(server => (
+            {servers.map((server) => (
               <li key={server.id}>
-                Server ID: {server.id}, Country: {server.country} 
-                <Button className="ml-4" onClick={() => payForServerAccess(server.id)}>Pay for Access</Button>
+                Server ID: {server.id}, Country: {server.country}
+                <Button
+                  className="ml-4"
+                  onClick={() => payForServerAccess(account, server.id, { firstOctet: 192, secondOctet: 168, thirdOctet: 1, fourthOctet: 1 })}
+                  disabled={!account}
+                >
+                  Pay for Access
+                </Button>
               </li>
             ))}
           </ul>
+          {payError && <p className="text-red-500 mt-2">{payError}</p>}
         </CardContent>
       </Card>
     </div>
