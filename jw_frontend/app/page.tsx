@@ -56,7 +56,7 @@ function FhenixContractUI() {
         let web3Provider: ethers.providers.Provider
 
         if (typeof window !== 'undefined' && typeof window.ethereum !== 'undefined') {
-          web3Provider = new ethers.providers.Web3Provider(window.ethereum as any)
+          web3Provider = new ethers.providers.Web3Provider(window.ethereum)
         } else {
           web3Provider = new ethers.providers.JsonRpcProvider(rpcUrl)
         }
